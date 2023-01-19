@@ -14,11 +14,16 @@ from recetasApp.models import PasoIngrediente
 
 # Register your models here.
 
+class RecetaAdmin (admin.ModelAdmin):
+    list_display = ("nombre","publica","porciones")
+    search_fields = ("nombre","porciones")
+    list_filter = ("hora","saborGeneral")
+
 admin.site.register(Unidade)
 admin.site.register(Ingrediente)
 admin.site.register(SaboresGeneral)
 admin.site.register(Hora)
-admin.site.register(Receta)
+admin.site.register(Receta,RecetaAdmin)
 admin.site.register(Accion)
 admin.site.register(InstruccionesEspecifica)
 admin.site.register(Utensilio)
