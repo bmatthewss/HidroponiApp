@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2 class="mt-4 mb-4">Detalle de la planta</h2>
+
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th>Tipo</th>
+        <td>{{ planta.tipo }}</td>
+      </tr>
+      <tr>
+        <th>Fecha de inicio</th>
+        <td>{{ planta.fecha_inicio }}</td>
+      </tr>
+      <tr>
+        <th>Fecha de fin</th>
+        <td>{{ planta.fecha_fin }}</td>
+      </tr>
+      <tr>
+        <th>Estado</th>
+        <td>{{ planta.estado }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <a href="{% url 'plantas' %}" class="btn btn-primary">Volver a la lista de plantas</a>
+{% endblock %}

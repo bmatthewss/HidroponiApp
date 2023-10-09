@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+      <div class="row">
+         <div class="col-md-7">
+            <h2 class="mt-4 mb-4">Consumo
+                <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#registroModal">
+                    <i class="bi bi-plus"></i>
+                </button>
+              <button onclick="exportarCSV()" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-file-earmark-excel"></i>
+              </button>
+            </h2>
+         </div>
+        <div class="col-md-5 mt-4 mb-4">
+            <input type="text" id="omnisearch" class="form-control" placeholder="Buscar...">
+         </div>
+      </div>
+  {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">
+      {{ message }}
+    </div>
+  {% endfor %}
+
+  <hr>
+  <div class="row">
+
+  <br>
+  <table class="table table-striped animate__animated animate__fadeIn">
+    <thead>
+      <tr>
+        <th>Fecha y Hora</th>
+        <th>Tipo</th>
+        <th>Cantidad (L,mL,W/h)</th>
+        <th>Costo por unidad (CLP)</th>
+        <th>Costo total (CLP)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for consumo in consumos %}
+        <tr>
+          <td>{{ consumo.fecha|date:"Y-m-d H:i" }}</td>
+          <td>
+            <span class="badge bg-{{ consumo.get_color_tipo }}"><i class="bi bi-{{ consumo.get_icon_tipo }}"></i></span>
+          </td>
+          <td>{{ consumo.cantidad }}</td>
+          <td>{{ consumo.costo_por_unidad }}</td>
+          <td>{{ consumo.costo_total }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Modal -->
+  <div class="modal fade" id="registroModal" tabindex="-1" role="dialog" aria-labelledby="registroModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="registroModalLabel">Registrar Consumo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Aquí va el contenido del formulario de registro -->
+          <form method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="{{ form.tipo.auto_id }}">Tipo</label>
+                  <select name="{{ form.tipo.name }}" id="{{ form.tipo.auto_id }}" class="form-control">
+                    {% for choice in form.tipo.field.choices %}
+                      <option value="{{ choice.0 }}" {% if form.tipo.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="{{ form.cantidad.auto_id }}">Cantidad</label>
+                  <input type="{{ form.cantidad.field.widget.input_type }}" name="{{ form.cantidad.name }}" id="{{ form.cantidad.auto_id }}" class="form-control" value="{{ form.cantidad.value }}">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="{{ form.costo_por_unidad.auto_id }}">Costo por unidad (CLP)</label>
+                  <input type="{{ form.costo_por_unidad.field.widget.input_type }}" name="{{ form.costo_por_unidad.name }}" id="{{ form.costo_por_unidad.auto_id }}" class="form-control" value="{{ form.costo_por_unidad.value }}">
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+          </form>
+
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+  <!-- Fin del Modal -->
+   {% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const omnisearch = document.getElementById('omnisearch');
+      omnisearch.addEventListener('input', function() {
+        const searchText = omnisearch.value.toLowerCase();
+        const tableRows = document.querySelectorAll('.table tbody tr');
+
+        tableRows.forEach(row => {
+          const rowText = row.textContent.toLowerCase();
+          if (rowText.includes(searchText)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    });
+
+  function exportarCSV() {
+    const tabla = document.querySelector('.table');
+    const filas = tabla.querySelectorAll('tr');
+    let csv = '';
+
+    filas.forEach((fila, i) => {
+      const celdas = fila.querySelectorAll('td, th');
+      celdas.forEach((celda, j) => {
+        // Reemplaza las comas en el contenido de la celda para evitar problemas en el archivo CSV
+        const contenidoCelda = celda.textContent.replace(/,/g, ';').trim();;
+        csv += contenidoCelda;
+
+        if (j < celdas.length - 1) {
+          csv += ',';
+        }
+      });
+      csv += '\r\n';
+    });
+
+    const enlaceDescarga = document.createElement('a');
+    enlaceDescarga.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    enlaceDescarga.target = '_blank';
+    enlaceDescarga.download = 'consumo.csv';
+    enlaceDescarga.click();
+  }
+</script>
+{% endblock %}
+{% endblock %}

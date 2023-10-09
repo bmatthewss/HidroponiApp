@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-7">
+            <h2 class="mt-4 mb-4">Plantas
+                <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#nuevoModal">
+                    <i class="bi bi-plus"></i>
+                </button>
+                <button onclick="exportarCSV()" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-file-earmark-excel"></i>
+                </button>
+            </h2>
+        </div>
+        <div class="col-md-5 mt-4 mb-4">
+            <input type="text" id="omnisearch" class="form-control" placeholder="Buscar...">
+        </div>
+    </div>
+    <hr>
+    <br>
+    <table class="table table-striped animate__animated animate__fadeIn">
+        <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>Fecha de inicio</th>
+            <th>Fecha de fin</th>
+            <th>Estado</th>
+            <th>Accion</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for planta in plantas %}
+            <tr>
+                <td>
+                    <span class="badge bg-{{ planta.get_color }}">{{ planta.tipo }}</span>
+                </td>
+                <td>{{ planta.fecha_inicio }}</td>
+                <td>{{ planta.fecha_fin }}</td>
+                <td>
+                    <span class="badge bg-{{ planta.get_color_status }}">{{ planta.estado }}</span>
+                </td>
+                <td>
+                    <a href="{% url 'planta_detalle' planta.id %}" class="btn btn-light btn-sm" data-toggle="tooltip"
+                       title="Ver">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url 'cosechar_planta' planta.id %}" class="btn btn-warning btn-sm" data-toggle="tooltip"
+                       title="Cosechar">
+                        <i class="bi bi-scissors"></i>
+                    </a>
+                    <a href="{% url 'limpiar_planta' planta.id %}" class="btn btn-secondary btn-sm"
+                       data-toggle="tooltip" title="Limpiar">
+                        <i class="bi bi-brush"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="nuevoModal" tabindex="-1" role="dialog" aria-labelledby="nuevoModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nuevoModalLabel">Nuevo Almacigo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Aquí va el contenido del formulario de nuevo registro -->
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.tipo.auto_id }}">Tipo</label>
+
+                                    <select name="{{ form.tipo.name }}" id="{{ form.tipo.auto_id }}"
+                                            class="form-control">
+                                        {% for choice in form.tipo.field.choices %}
+                                            <option value="{{ choice.0 }}"
+                                                    {% if form.tipo.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                                        {% endfor %}
+                                    </select>
+
+
+                                    <!-- Carousel -->
+                                    <div id="carouselExampleControls" class="carousel slide">
+                                        <div class="carousel-inner">
+                                            {% for choice in form.tipo.field.choices %}
+                                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                                    <img src="{% static 'img/'|add:choice.0|add:'.jpg' %}"
+                                                         class="d-block w-100 rounded" alt="{{ choice.1 }}">
+                                                    <div class="carousel-caption d-none d-md-block">
+                                                        <h5>{{ choice.1 }}</h5>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <button class="carousel-control-prev" type="button"
+                                                data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button"
+                                                data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Next</span>
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                     </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    {% block extra_js %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const omnisearch = document.getElementById('omnisearch');
+                omnisearch.addEventListener('input', function () {
+                    const searchText = omnisearch.value.toLowerCase();
+                    const tableRows = document.querySelectorAll('.table tbody tr');
+
+                    tableRows.forEach(row => {
+                        const rowText = row.textContent.toLowerCase();
+                        if (rowText.includes(searchText)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            function exportarCSV() {
+                const tabla = document.querySelector('.table');
+                const filas = tabla.querySelectorAll('tr');
+                let csv = '';
+
+                filas.forEach((fila, i) => {
+                    const celdas = fila.querySelectorAll('td, th');
+                    celdas.forEach((celda, j) => {
+                        // Reemplaza las comas en el contenido de la celda para evitar problemas en el archivo CSV
+                        const contenidoCelda = celda.textContent.replace(/,/g, ';').trim();
+                        ;
+                        csv += contenidoCelda;
+
+                        if (j < celdas.length - 1) {
+                            csv += ',';
+                        }
+                    });
+                    csv += '\r\n';
+                });
+
+                const enlaceDescarga = document.createElement('a');
+                enlaceDescarga.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+                enlaceDescarga.target = '_blank';
+                enlaceDescarga.download = 'plantas.csv';
+                enlaceDescarga.click();
+            }
+
+        </script>
+    {% endblock %}
+{% endblock %}
