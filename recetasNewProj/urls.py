@@ -16,6 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from hidroponiapp import views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.plantas, name='plantas'),
+    path('consumo/', views.consumo, name='consumo'),
+    path('planta/<int:planta_id>/', views.planta_detalle, name='planta_detalle'),
+    path('estadisticas/', views.estadisticas, name='estadisticas'),
+    path('cosechar/<int:planta_id>/', views.cosechar_planta, name='cosechar_planta'),
+    path('limpiar/<int:planta_id>/', views.limpiar_planta, name='limpiar_planta'),
+
 ]

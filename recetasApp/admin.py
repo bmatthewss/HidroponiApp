@@ -15,9 +15,14 @@ from recetasApp.models import PasoIngrediente
 # Register your models here.
 
 class RecetaAdmin (admin.ModelAdmin):
-    list_display = ("nombre","publica","porciones")
+    list_display = ("nombre","publica","porciones","fechayhora")
     search_fields = ("nombre","porciones")
     list_filter = ("hora","saborGeneral")
+
+class PasoAdmin (admin.ModelAdmin):
+    list_display = ("id","receta","accion", "instruccionEspecifica", "utensiliosPrint", "tiempoMinutos", "temperatura", "condimentoEspecialPrint", "consistenciaPrint")
+    search_fields = ("receta","tiempoMinutos", "temperatura")
+    list_filter = ("accion","instruccionEspecifica", "utensilio", "condimentoEspecia", "consistenciaDeseada")
 
 admin.site.register(Unidade)
 admin.site.register(Ingrediente)
@@ -29,5 +34,5 @@ admin.site.register(InstruccionesEspecifica)
 admin.site.register(Utensilio)
 admin.site.register(Condimento)
 admin.site.register(Consistencia)
-admin.site.register(Paso)
+admin.site.register(Paso,PasoAdmin)
 admin.site.register(PasoIngrediente)
